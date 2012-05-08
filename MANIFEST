@@ -1,0 +1,14 @@
+Changes
+lib/DBD/SQLite/AuthorTests.pm
+lib/DBD/SQLite/AuthorTests/GetSQLite3.pm
+lib/DBD/SQLite/AuthorTests/IsNumber.pm
+lib/DBD/SQLite/AuthorTests/Util.pm
+Makefile.PL
+MANIFEST			This list of files
+README
+t/00_load.t
+t/01_util.t
+t/10_get_sqlite3.t
+t/20_is_number.t
+t/99_pod.t
+t/99_podcoverage.t
