@@ -43,7 +43,8 @@ sub get_and_make {
   my $tarball = tmpfile("sqlite-$version.tar.gz");
 
   unless ($tarball->exists) {
-    my $url = join '-', 'http://www.sqlite.org/sqlite',
+    my $year = ($version >= 3071600) ? "2013/" : "";
+    my $url = join '-', 'http://www.sqlite.org/${year}sqlite',
                         ($is_pre374 ? 'amalgamation' : 'autoconf'),
                         "$version.tar.gz";
 
@@ -82,7 +83,8 @@ sub get_binary {
   my $zipball = tmpfile("sqlite-shell-win32-x86-$version.zip");
 
   unless ($zipball->exists) {
-    my $url = 'http://www.sqlite.org/' . $zipball->basename;
+    my $year = ($version >= 3071600) ? "2013/" : "";
+    my $url = "http://www.sqlite.org/$year" . $zipball->basename;
 
     debug("downloading $url to $zipball");
     my $res = getstore($url, $zipball->path);
