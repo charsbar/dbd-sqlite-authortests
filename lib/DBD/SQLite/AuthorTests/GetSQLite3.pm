@@ -44,7 +44,7 @@ sub get_and_make {
 
   unless ($tarball->exists) {
     my $year = ($version >= 3071600) ? "2013/" : "";
-    my $url = join '-', 'http://www.sqlite.org/${year}sqlite',
+    my $url = join '-', "http://www.sqlite.org/${year}sqlite",
                         ($is_pre374 ? 'amalgamation' : 'autoconf'),
                         "$version.tar.gz";
 
