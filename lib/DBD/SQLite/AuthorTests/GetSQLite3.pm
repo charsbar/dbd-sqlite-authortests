@@ -19,34 +19,25 @@ sub get {
   }
   debug("installed: $installed; want: $version");
 
-  if ($version =~ /^3\./) {
-    $version = sprintf "%u%02u%02u%02u", (split /\./, $version), (0, 0, 0);
-  }
-
-  my $is_pre374  = $version < 3070400 ? 1 : 0;
-  if ($is_pre374) {
-    my @parts = $version =~ /(3)(\d\d)(\d\d)(\d\d)/;
-    $version = join '.', grep $_, @parts
-  }
-
   if ($^O eq 'MSWin32') {
-    $class->get_binary($version, $is_pre374);
+    $class->get_binary($version);
   }
   else {
-    $class->get_and_make($version, $is_pre374);
+    $class->get_and_make($version);
   }
 }
 
 sub get_and_make {
-  my ($class, $version, $is_pre374) = @_;
+  my ($class, $version) = @_;
 
-  my $tarball = tmpfile("sqlite-$version.tar.gz");
+  my $type = archive_type($version);
+  my $tarball = tmpfile("sqlite-$type-".version_for_url($version).".tar.gz");
 
   unless ($tarball->exists) {
-    my $year = ($version >= 3071600) ? "2013/" : "";
-    my $url = join '-', "http://www.sqlite.org/${year}sqlite",
-                        ($is_pre374 ? 'amalgamation' : 'autoconf'),
-                        "$version.tar.gz";
+    my $url = join '/', grep defined,
+              "http://www.sqlite.org",
+              version_year($version),
+              $tarball->basename;
 
     debug("downloading $url to $tarball");
     my $res = getstore($url, $tarball->path);
@@ -80,11 +71,13 @@ sub get_and_make {
 sub get_binary {
   my ($class, $version) = @_;
 
-  my $zipball = tmpfile("sqlite-shell-win32-x86-$version.zip");
+  my $zipball = tmpfile("sqlite-shell-win32-x86-".version_for_url($version).".zip");
 
   unless ($zipball->exists) {
-    my $year = ($version >= 3071600) ? "2013/" : "";
-    my $url = "http://www.sqlite.org/$year" . $zipball->basename;
+    my $url = join '/', grep defined,
+              "http://www.sqlite.org",
+              version_year($version),
+              $zipball->basename;
 
     debug("downloading $url to $zipball");
     my $res = getstore($url, $zipball->path);
@@ -101,6 +94,56 @@ sub get_binary {
 
   debug("done");
   return;
+}
+
+sub version_year {
+  my $version = shift;
+  return 2014 if version_num($version) >= 3080300;
+  return 2013 if version_num($version) >= 3071600;
+  return;
+}
+
+sub version_num {
+  my $version = shift;
+  sprintf "%u%02u%02u%02u", (split_version($version), 0, 0, 0)[0..3];
+}
+
+sub version_dotty {
+  my $version = shift;
+  my @parts = split_version($version);
+  join '.', ($parts[3] ? @parts : @parts[0..2]);
+}
+
+sub version_for_url {
+  my $version = shift;
+  is_old_version($version)
+    ? version_dotty($version)
+    : version_num($version);
+}
+
+sub is_old_version {
+  my $version = shift;
+  version_num($version) < 3070400 ? 1 : 0;
+}
+
+sub archive_type {
+  my $version = shift;
+  is_old_version($version) ? 'amalgamation' : 'autoconf';
+}
+
+sub split_version {
+  my $version = shift;
+
+  if ($version =~ m/^[0-9](?:\.[0-9]+){0,3}$/) {
+    # $version is X.Y+.Z+.W+ style used for SQLite <= 3.7.3
+    return map { (0 + $_) } (split /\./, $version);
+  }
+  elsif ($version =~ m/^[0-9](?:[0-9]{2}){0,3}$/) {
+    # $version is XYYZZWW style used for SQLite >= 3.7.4
+    return map { 0 + $_ } ((substr $version, 0, 1),
+                            ((substr $version, 1) =~ m/[0-9]{2}/g));
+  }
+  die "improper <version> format for [$version]\n";
 }
 
 1;
