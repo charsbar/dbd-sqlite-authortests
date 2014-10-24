@@ -10,7 +10,7 @@ unless (DBD::SQLite::AuthorTests::IsNumber->is_available) {
 
 for my $quote ('"', '') {
   for my $value (DBD::SQLite::AuthorTests::IsNumber->tests) {
-    for my $type ('', 'integer', 'unsigned integer', 'real', 'unsigned real', 'text', 'integer primary key') {
+    for my $type ('', 'integer', 'unsigned integer', 'real', 'unsigned real', 'text', 'integer primary key', 'bigint', 'unsigned bigint') {
       bin_insert($value, $type, $quote);
       my @bb = bin_select();
       my @bd = dbd_select();

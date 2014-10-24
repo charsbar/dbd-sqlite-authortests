@@ -103,6 +103,9 @@ sub dbd_typed_insert {
   if ($type =~ /integer/) {
     $sth->bind_param(1, $value, SQL_INTEGER);
   }
+  elsif ($type =~ /bigint/) {
+    $sth->bind_param(1, $value, SQL_BIGINT);
+  }
   elsif ($type =~ /real/) {
     $sth->bind_param(1, $value, SQL_DOUBLE);
   }
